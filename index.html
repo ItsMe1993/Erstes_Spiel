@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gebäude-Upgrade-Spiel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            text-align: center;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .upgrade-button {
+            padding: 5px 10px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gebäude-Upgrade-Spiel</h1>
+    <div>
+        <h3 id="holzAnzeige">Holz: 0 / 100</h3>
+        <h3 id="bauernAnzeige">Bauern: 5</h3>
+        <h3 id="produktionAnzeige">Produktion: 0.2 Holz/s</h3>
+    </div>
+
+    <!-- Holzhütte -->
+    <div class="section">
+        <h2>Holzhütte</h2>
+        <p id="holzhütteLevel">Level: 1</p>
+        <button class="upgrade-button" id="upgradeHolzhütte" onclick="upgradeGebäude('Holzhütte')">Upgrade</button>
+        <p id="holzhütteKosten">Kosten: 20 Holz, 1 Bauer</p>
+    </div>
+
+    <!-- Lager -->
+    <div class="section">
+        <h2>Lager</h2>
+        <p id="lagerLevel">Level: 1</p>
+        <button class="upgrade-button" id="upgradeLager" onclick="upgradeGebäude('Lager')">Upgrade</button>
+        <p id="lagerKosten">Kosten: 50 Holz, 2 Bauern</p>
+    </div>
+
+    <!-- Bauernhaus -->
+    <div class="section">
+        <h2>Bauernhaus</h2>
+        <p id="bauernhausLevel">Level: 1</p>
+        <button class="upgrade-button" id="upgradeBauernhaus" onclick="upgradeGebäude('Bauernhaus')">Upgrade</button>
+        <p id="bauernhausKosten">Kosten: 10 Holz</p>
+    </div>
+
+    <script>
+        // Startwerte
+        let holz = 0;
+        let maxHolz = 100;
+        let bauern = 5;
+        let holzProSekunde = 0.2;
+        let gebäudeLevels = {
+            "Holzhütte": 1,
+            "Lager": 1,
+            "Bauernhaus": 1
+        };
+        let upgradeKosten = {
+            "Holzhütte": { holz: 20, bauern: 1 },
+            "Lager": { holz: 50, bauern: 2 },
+            "Bauernhaus": { holz: 10, bauern: 0 }
+        };
+
+        // Ressourcenaktualisierung
+        function aktualisiereRessourcen() {
+            holz += holzProSekunde / 10;
+            if (holz > maxHolz) holz = maxHolz; // Maximalwert nicht überschreiten
+            document.getElementById("holzAnzeige").innerText = `Holz: ${Math.floor(holz)} / ${maxHolz}`;
+            document.getElementById("produktionAnzeige").innerText = `Produktion: ${holzProSekunde.toFixed(1)} Holz/s`;
+            aktualisiereButtonFarbe();
+        }
+
+        // Upgrade Funktion
+        function upgradeGebäude(gebäudeName) {
+            let kosten = upgradeKosten[gebäudeName];
+            if (holz >= kosten.holz && bauern >= kosten.bauern) {
+                holz -= kosten.holz;
+                bauern -= kosten.bauern;
+                gebäudeLevels[gebäudeName] += 1;
+
+                // Upgrade-Effekte
+                if (gebäudeName === "Holzhütte") {
+                    holzProSekunde *= 2;
+                } else if (gebäudeName === "Lager") {
+                    maxHolz += 100;
+                } else if (gebäudeName === "Bauernhaus") {
+                    bauern *= 2;
+                }
+
+                // Upgrade-Kosten verdoppeln
+                kosten.holz *= 2;
+                kosten.bauern *= 2;
+
+                // GUI aktualisieren
+                aktualisiereGUI();
+            }
+        }
+
+        // GUI aktualisieren
+        function aktualisiereGUI() {
+            document.getElementById("holzAnzeige").innerText = `Holz: ${Math.floor(holz)} / ${maxHolz}`;
+            document.getElementById("bauernAnzeige").innerText = `Bauern: ${bauern}`;
+            document.getElementById("produktionAnzeige").innerText = `Produktion: ${holzProSekunde.toFixed(1)} Holz/s`;
+
+            document.getElementById("holzhütteLevel").innerText = `Level: ${gebäudeLevels["Holzhütte"]}`;
+            document.getElementById("lagerLevel").innerText = `Level: ${gebäudeLevels["Lager"]}`;
+            document.getElementById("bauernhausLevel").innerText = `Level: ${gebäudeLevels["Bauernhaus"]}`;
+
+            document.getElementById("holzhütteKosten").innerText = `Kosten: ${upgradeKosten["Holzhütte"].holz} Holz, ${upgradeKosten["Holzhütte"].bauern} Bauer`;
+            document.getElementById("lagerKosten").innerText = `Kosten: ${upgradeKosten["Lager"].holz} Holz, ${upgradeKosten["Lager"].bauern} Bauern`;
+            document.getElementById("bauernhausKosten").innerText = `Kosten: ${upgradeKosten["Bauernhaus"].holz} Holz`;
+        }
+
+        // Button-Farbe anpassen
+        function aktualisiereButtonFarbe() {
+            ["Holzhütte", "Lager", "Bauernhaus"].forEach(gebäudeName => {
+                let kosten = upgradeKosten[gebäudeName];
+                let button = document.getElementById(`upgrade${gebäudeName}`);
+                if (holz >= kosten.holz && bauern >= kosten.bauern) {
+                    button.style.backgroundColor = "green";
+                } else {
+                    button.style.backgroundColor = "grey";
+                }
+            });
+        }
+
+        // Holzproduktion starten
+        setInterval(aktualisiereRessourcen, 100);
+    </script>
+</body>
+</html>
